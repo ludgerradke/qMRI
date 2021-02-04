@@ -2,13 +2,13 @@ import sqlite3
 import numpy as np
 from Database.utils import *
 
-class Connection:
+
+class DataDB:
 
     def __init__(self):
-        # self.con = sqlite3.connect(':memory:')
-        self.con = sqlite3.connect(r'\temp\guiDB.db')
+        self.con = sqlite3.connect(r'\temp\data.db')
         self.cur = self.con.cursor()
-        self.__create_db()
+        self.__create()
 
     ####################################################################################################################
     # public methods
@@ -72,7 +72,7 @@ class Connection:
         info = [i for i in cursor]
         return info[0][0]
 
-    def __create_db(self):
+    def __create(self):
         self.cur.execute(
             'CREATE TABLE IF NOT EXISTS `d_array` '
             '(slice text, dtype text, size_x text, size_y text, array bytes) '
@@ -83,5 +83,9 @@ class Connection:
         )
         self.cur.execute(
             'CREATE TABLE IF NOT EXISTS `d_information` '
+            '(information text, value any) '
+        )
+        self.cur.execute(
+            'CREATE TABLE IF NOT EXISTS `m_information` '
             '(information text, value any) '
         )
