@@ -1,8 +1,9 @@
 import pydicom
-from pydicom.dataset import Dataset, FileDataset
+from pydicom.dataset import Dataset
 from pydicom.uid import ExplicitVRLittleEndian
 import pydicom._storage_sopclass_uids
 import numpy as np
+import os
 
 
 def create_test_dicom(file: str = r'default.dcm', number_of_pixel: int = 100):
@@ -67,3 +68,15 @@ def create_test_dicom(file: str = r'default.dcm', number_of_pixel: int = 100):
 
     ds.PixelData = pixel_array.tobytes()
     ds.save_as(file)
+
+
+def create_dicom_folder(folder: str, number: int):
+    if os.path.exists(folder):
+        return 'FolderExist'
+    if not number*10 == int(number) * 10:
+        return 'number must be a positive int'
+    if number < 0:
+        return 'number must be a positive int'
+    os.mkdir(folder)
+    for i in range(number):
+        create_test_dicom(folder + '/dicom_dyn_{}.dcm'.format(i))
