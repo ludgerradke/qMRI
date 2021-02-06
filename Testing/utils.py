@@ -1,9 +1,10 @@
 import pydicom
-from pydicom.dataset import Dataset
+from pydicom.dataset import Dataset, FileMetaDataset, FileDataset
 from pydicom.uid import ExplicitVRLittleEndian
 import pydicom._storage_sopclass_uids
 import numpy as np
 import os
+import shutil
 
 
 def create_test_dicom(file: str = r'default.dcm', number_of_pixel: int = 100):
@@ -16,16 +17,15 @@ def create_test_dicom(file: str = r'default.dcm', number_of_pixel: int = 100):
     :return:
     """
     # create dicom meta information
-    meta = pydicom.Dataset()
+    meta = FileMetaDataset()
     meta.MediaStorageSOPClassUID = pydicom._storage_sopclass_uids.MRImageStorage
     meta.MediaStorageSOPInstanceUID = pydicom.uid.generate_uid()
     meta.TransferSyntaxUID = pydicom.uid.ExplicitVRLittleEndian
 
-    # create dataset
-    ds = Dataset()
+    # create dataset and add meta information
+    ds = FileDataset(file, {},
+                     file_meta=meta, preamble=b"\0" * 128)
 
-    # add meta information
-    ds.file_meta = meta
 
     # add some information
     ds.SOPClassUID = pydicom._storage_sopclass_uids.MRImageStorage
@@ -63,20 +63,24 @@ def create_test_dicom(file: str = r'default.dcm', number_of_pixel: int = 100):
 
     pixel_array = np.zeros((number_of_pixel, number_of_pixel))
     pixel_array[int(0.4 * number_of_pixel):int(0.6 * number_of_pixel),
-                int(0.4 * number_of_pixel):int(0.6 * number_of_pixel)] = 1000
+    int(0.4 * number_of_pixel):int(0.6 * number_of_pixel)] = 1000
     pixel_array = pixel_array.astype(np.uint16)
 
     ds.PixelData = pixel_array.tobytes()
     ds.save_as(file)
 
 
-def create_dicom_folder(folder: str, number: int):
+def create_dicom_test_folder(folder: str, number: int):
     if os.path.exists(folder):
         return 'FolderExist'
-    if not number*10 == int(number) * 10:
+    if not number * 10 == int(number) * 10:
         return 'number must be a positive int'
     if number < 0:
         return 'number must be a positive int'
     os.mkdir(folder)
     for i in range(number):
         create_test_dicom(folder + '/dicom_dyn_{}.dcm'.format(i))
+
+
+def delete_dicom_test_folder(folder):
+    shutil.rmtree(folder)
